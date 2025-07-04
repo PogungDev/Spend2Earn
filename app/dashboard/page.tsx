@@ -26,9 +26,14 @@ import {
   AlertTriangle,
   DollarSign,
   Info,
+  CreditCard,
+  Vault,
+  TrendingUp,
+  Activity,
 } from "lucide-react"
 import { toast } from "sonner"
 import { WalletConnector } from "@/components/wallet/wallet-connector"
+import { MetaMaskCardIntegration } from "@/components/metamask-card/card-integration"
 
 interface AllocationData {
   aave: number
@@ -635,60 +640,37 @@ export default function DashboardPage() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 bg-white border border-gray-200 h-auto p-1 shadow-sm">
-            <TabsTrigger
-              value="spend"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-red-600 data-[state=active]:text-white text-xs py-3 flex flex-col items-center gap-1"
-            >
-              <DollarSign className="w-4 h-4" />
+          <TabsList className="grid w-full grid-cols-6 bg-white shadow-md">
+            <TabsTrigger value="card" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              <CreditCard className="w-4 h-4 mr-2" />
+              MetaMask Card
+            </TabsTrigger>
+            <TabsTrigger value="spend" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              <Zap className="w-4 h-4 mr-2" />
               Spend
             </TabsTrigger>
-            <TabsTrigger
-              value="vault"
-              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs py-3 flex flex-col items-center gap-1 relative"
-            >
-              <Wallet className="w-4 h-4" />
+            <TabsTrigger value="vault" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              <Vault className="w-4 h-4 mr-2" />
               Vault
-              {currentBadge === "Unverified" && <Lock className="w-3 h-3 absolute -top-1 -right-1 text-gray-400" />}
             </TabsTrigger>
-            <TabsTrigger
-              value="borrow"
-              className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-xs py-3 flex flex-col items-center gap-1 relative"
-            >
-              <CreditIcon className="w-4 h-4" />
-              Borrow
-              {currentBadge === "Unverified" && <Lock className="w-3 h-3 absolute -top-1 -right-1 text-gray-400" />}
+            <TabsTrigger value="credit" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
+              <DollarSign className="w-4 h-4 mr-2" />
+              Credit
             </TabsTrigger>
-            <TabsTrigger
-              value="repay"
-              className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-xs py-3 flex flex-col items-center gap-1 relative"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Repay
-              {currentBadge === "Unverified" && <Lock className="w-3 h-3 absolute -top-1 -right-1 text-gray-400" />}
+            <TabsTrigger value="yield" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Yield
             </TabsTrigger>
-            <TabsTrigger
-              value="badges"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-600 data-[state=active]:to-orange-600 data-[state=active]:text-white text-xs py-3 flex flex-col items-center gap-1"
-            >
-              <Trophy className="w-4 h-4" />
-              Badges
-            </TabsTrigger>
-            <TabsTrigger
-              value="activity"
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs py-3 flex flex-col items-center gap-1"
-            >
-              <History className="w-4 h-4" />
+            <TabsTrigger value="activity" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+              <Activity className="w-4 h-4 mr-2" />
               Activity
             </TabsTrigger>
-            <TabsTrigger
-              value="overview"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white text-xs py-3 flex flex-col items-center gap-1"
-            >
-              <Home className="w-4 h-4" />
-              Overview
-            </TabsTrigger>
           </TabsList>
+
+          {/* MetaMask Card Tab */}
+          <TabsContent value="card" className="space-y-6">
+            <MetaMaskCardIntegration />
+          </TabsContent>
 
           {/* Spend Tab - Primary focus */}
           <TabsContent value="spend" className="space-y-6">

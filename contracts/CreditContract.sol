@@ -8,6 +8,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 interface IVaultContract {
     function getUserBalance(address user) external view returns (uint256);
 }
+interface IBadgeContract {
+    function getUserBadge(address user) external view returns (uint8);
+}
 
 contract CreditContract is ReentrancyGuard, Ownable {
     IERC20 public immutable USDC;
@@ -22,10 +25,6 @@ contract CreditContract is ReentrancyGuard, Ownable {
     // Interest rates per badge tier (in basis points, e.g., 250 = 2.5%)
     mapping(uint8 => uint256) public interestRates;
     
-    // Badge contract interface
-    interface IBadgeContract {
-        function getUserBadge(address user) external view returns (uint8);
-    }
     
     IBadgeContract public badgeContract;
     

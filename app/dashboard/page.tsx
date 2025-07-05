@@ -30,6 +30,7 @@ import {
   Vault,
   TrendingUp,
   Activity,
+  CheckCircle,
 } from "lucide-react"
 import { toast } from "sonner"
 import { WalletConnector } from "@/components/wallet/wallet-connector"
@@ -640,37 +641,40 @@ export default function DashboardPage() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 bg-white shadow-md">
-            <TabsTrigger value="card" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              <CreditCard className="w-4 h-4 mr-2" />
-              MetaMask Card
-            </TabsTrigger>
-            <TabsTrigger value="spend" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              <Zap className="w-4 h-4 mr-2" />
+          <TabsList className="grid w-full grid-cols-8 bg-white shadow-md h-auto p-1">
+            <TabsTrigger value="spend" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white text-xs p-2">
+              <Zap className="w-3 h-3 mr-1" />
               Spend
             </TabsTrigger>
-            <TabsTrigger value="vault" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-              <Vault className="w-4 h-4 mr-2" />
+            <TabsTrigger value="vault" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs p-2">
+              <Vault className="w-3 h-3 mr-1" />
               Vault
             </TabsTrigger>
-            <TabsTrigger value="credit" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
-              <DollarSign className="w-4 h-4 mr-2" />
-              Credit
+            <TabsTrigger value="credit" className="data-[state=active]:bg-green-500 data-[state=active]:text-white text-xs p-2">
+              <DollarSign className="w-3 h-3 mr-1" />
+              Borrow
             </TabsTrigger>
-            <TabsTrigger value="yield" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Yield
+            <TabsTrigger value="repay" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-xs p-2">
+              <RefreshCw className="w-3 h-3 mr-1" />
+              Repay
             </TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
-              <Activity className="w-4 h-4 mr-2" />
+            <TabsTrigger value="badges" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white text-xs p-2">
+              <Trophy className="w-3 h-3 mr-1" />
+              Badges
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white text-xs p-2">
+              <Activity className="w-3 h-3 mr-1" />
               Activity
             </TabsTrigger>
+            <TabsTrigger value="overview" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs p-2">
+              <Home className="w-3 h-3 mr-1" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="yield" className="data-[state=active]:bg-pink-500 data-[state=active]:text-white text-xs p-2">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              Yield
+            </TabsTrigger>
           </TabsList>
-
-          {/* MetaMask Card Tab */}
-          <TabsContent value="card" className="space-y-6">
-            <MetaMaskCardIntegration />
-          </TabsContent>
 
           {/* Spend Tab - Primary focus */}
           <TabsContent value="spend" className="space-y-6">
@@ -961,58 +965,905 @@ export default function DashboardPage() {
             )}
           </TabsContent>
 
-          {/* Other tabs would continue with similar structure... */}
-          <TabsContent value="borrow">
+          {/* Credit Tab */}
+          <TabsContent value="credit" className="space-y-6">
+            {currentBadge === "Unverified" ? (
+              <LockedFeature
+                requiredTier="Verified"
+                currentTier={currentBadge}
+                featureName="Credit Features"
+                onUpgrade={handleLockedFeatureClick}
+              />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <Card className="bg-white border-green-200 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-gray-900">
+                        <DollarSign className="mr-2 h-5 w-5 text-green-600" />
+                        Vault-Backed Credit Line
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Borrow against your vault balance with competitive rates
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div>
+                            <p className="text-sm text-gray-600">Available Credit</p>
+                            <p className="text-xl font-bold text-green-600">
+                              ${(getCreditLimit(currentBadge, vaultBalance) - loanBalance).toFixed(2)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Used Credit</p>
+                            <p className="text-xl font-bold text-orange-600">${loanBalance.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">APR Rate</p>
+                            <p className="text-xl font-bold text-blue-600">
+                              {currentBadge === "Verified" ? "4.5%" : currentBadge === "Silver" ? "3.2%" : "2.1%"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h3 className="font-medium text-gray-900">Borrow Funds</h3>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Amount to Borrow</label>
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                value={borrowAmount}
+                                onChange={(e) => setBorrowAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                                className="pl-8 border-gray-300 focus:border-green-500 focus:ring-green-500 bg-white"
+                                placeholder="0.00"
+                              />
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Max: ${(getCreditLimit(currentBadge, vaultBalance) - loanBalance).toFixed(2)}
+                          </div>
+                          <Button
+                            onClick={handleBorrow}
+                            disabled={!borrowAmount || Number.parseFloat(borrowAmount) > getCreditLimit(currentBadge, vaultBalance) - loanBalance}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <DollarSign className="mr-2 h-4 w-4" />
+                            Borrow Now
+                          </Button>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3 className="font-medium text-gray-900">Repay Loan</h3>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Repayment Amount</label>
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                value={repayAmount}
+                                onChange={(e) => setRepayAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                                className="pl-8 border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                                placeholder="0.00"
+                              />
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Outstanding: ${loanBalance.toFixed(2)}
+                          </div>
+                          <Button
+                            onClick={handleRepayCredit}
+                            disabled={!repayAmount || Number.parseFloat(repayAmount) > loanBalance}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Repay Loan
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-gray-900">Auto-Repayment from Yield</span>
+                          <Button
+                            variant={autoRepayEnabled ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setAutoRepayEnabled(!autoRepayEnabled)}
+                            className={autoRepayEnabled ? "bg-green-600" : ""}
+                          >
+                            {autoRepayEnabled ? "Enabled" : "Disabled"}
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {autoRepayEnabled 
+                            ? "Vault yield will automatically repay loans when generated" 
+                            : "Manual repayment required"}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-6">
+                  <Card className="bg-white border-green-200 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-gray-900">Credit Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Credit Limit</span>
+                        <span className="font-medium text-green-600">
+                          ${getCreditLimit(currentBadge, vaultBalance).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Utilization</span>
+                        <span className="font-medium text-orange-600">
+                          {((loanBalance / getCreditLimit(currentBadge, vaultBalance)) * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Monthly Interest</span>
+                        <span className="font-medium text-red-600">
+                          ${(loanBalance * (currentBadge === "Verified" ? 0.045 : currentBadge === "Silver" ? 0.032 : 0.021) / 12).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Collateral Value</span>
+                        <span className="font-medium text-blue-600">${vaultBalance.toFixed(2)}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg">
+                    <CardContent className="pt-6">
+                      <h3 className="text-lg font-semibold mb-2">Credit Health</h3>
+                      <div className="text-3xl font-bold mb-2">
+                        {vaultBalance > 0 ? (loanBalance / vaultBalance < 0.8 ? "Healthy" : "At Risk") : "No Collateral"}
+                      </div>
+                      <p className="text-green-100 text-sm">
+                        {vaultBalance > 0 && loanBalance / vaultBalance < 0.8 
+                          ? "Your credit position is safe" 
+                          : vaultBalance > 0 
+                            ? "Consider adding collateral or repaying"
+                            : "Add vault balance to enable borrowing"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Repay Tab */}
+          <TabsContent value="repay" className="space-y-6">
+            {currentBadge === "Unverified" ? (
+              <LockedFeature
+                requiredTier="Verified"
+                currentTier={currentBadge}
+                featureName="Repay Features"
+                onUpgrade={handleLockedFeatureClick}
+              />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <Card className="bg-white border-emerald-200 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-gray-900">
+                        <RefreshCw className="mr-2 h-5 w-5 text-emerald-600" />
+                        Loan Repayment Center
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Manage your loan repayments and auto-repayment settings
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div className="grid grid-cols-2 gap-4 text-center">
+                          <div>
+                            <p className="text-sm text-gray-600">Outstanding Balance</p>
+                            <p className="text-2xl font-bold text-red-600">${loanBalance.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Monthly Interest</p>
+                            <p className="text-xl font-bold text-orange-600">
+                              ${(loanBalance * (currentBadge === "Verified" ? 0.045 : currentBadge === "Silver" ? 0.032 : 0.021) / 12).toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="font-medium text-gray-900">Manual Repayment</h3>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Repayment Amount</label>
+                          <div className="relative">
+                            <Input
+                              type="text"
+                              value={repayAmount}
+                              onChange={(e) => setRepayAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                              className="pl-8 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 bg-white"
+                              placeholder="0.00"
+                            />
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={() => setRepayAmount((loanBalance * 0.25).toFixed(2))}
+                            variant="outline"
+                            size="sm"
+                          >
+                            25%
+                          </Button>
+                          <Button
+                            onClick={() => setRepayAmount((loanBalance * 0.5).toFixed(2))}
+                            variant="outline"
+                            size="sm"
+                          >
+                            50%
+                          </Button>
+                          <Button
+                            onClick={() => setRepayAmount((loanBalance * 0.75).toFixed(2))}
+                            variant="outline"
+                            size="sm"
+                          >
+                            75%
+                          </Button>
+                          <Button
+                            onClick={() => setRepayAmount(loanBalance.toFixed(2))}
+                            variant="outline"
+                            size="sm"
+                          >
+                            100%
+                          </Button>
+                        </div>
+                        <Button
+                          onClick={handleRepayCredit}
+                          disabled={!repayAmount || Number.parseFloat(repayAmount) > loanBalance}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Repay ${repayAmount || "0"}
+                        </Button>
+                      </div>
+
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h4 className="font-medium text-gray-900">Auto-Repayment Settings</h4>
+                            <p className="text-sm text-gray-600">Use vault yield to automatically repay loans</p>
+                          </div>
+                          <Button
+                            variant={autoRepayEnabled ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setAutoRepayEnabled(!autoRepayEnabled)}
+                            className={autoRepayEnabled ? "bg-green-600" : ""}
+                          >
+                            {autoRepayEnabled ? "Enabled" : "Disabled"}
+                          </Button>
+                        </div>
+                        
+                        {autoRepayEnabled && (
+                          <div className="space-y-3 pt-3 border-t border-blue-200">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Next Auto-Repay:</span>
+                              <span className="font-medium text-blue-600">${(vaultBalance * 0.087 / 365).toFixed(4)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Frequency:</span>
+                              <span className="font-medium text-blue-600">Daily (from yield)</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Time to Full Repay:</span>
+                              <span className="font-medium text-blue-600">
+                                {vaultBalance * 0.087 / 365 > 0 
+                                  ? `${Math.ceil(loanBalance / (vaultBalance * 0.087 / 365))} days`
+                                  : "∞"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <h4 className="font-medium text-yellow-800 mb-2">💡 Repayment Tips</h4>
+                        <ul className="text-sm text-yellow-700 space-y-1">
+                          <li>• Early repayment reduces total interest costs</li>
+                          <li>• Auto-repayment uses daily vault yield when available</li>
+                          <li>• Higher badge tiers get better interest rates</li>
+                          <li>• Maintaining low utilization improves credit health</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-6">
+                  <Card className="bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg">
+                    <CardContent className="pt-6">
+                      <h3 className="text-lg font-semibold mb-2">Repayment Progress</h3>
+                      <div className="text-3xl font-bold mb-2">
+                        {loanBalance > 0 ? `${((1 - loanBalance / Math.max(getCreditLimit(currentBadge, vaultBalance), 1)) * 100).toFixed(1)}%` : "100%"}
+                      </div>
+                      <p className="text-emerald-100 text-sm mb-4">
+                        {loanBalance > 0 ? "of credit limit available" : "No outstanding loans"}
+                      </p>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-emerald-100">Interest Saved:</span>
+                          <span className="text-white font-medium">$0.00</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-emerald-100">Total Repaid:</span>
+                          <span className="text-white font-medium">
+                            ${(getCreditLimit(currentBadge, vaultBalance) - loanBalance).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white border-emerald-200 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-gray-900">Repayment History</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {loanBalance > 0 ? (
+                        <div className="text-center text-gray-500 py-4">
+                          <RefreshCw className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No repayments yet</p>
+                          <p className="text-xs">Start repaying to see history</p>
+                        </div>
+                      ) : (
+                        <div className="text-center text-gray-500 py-4">
+                          <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                          <p className="text-sm font-medium text-green-700">All loans repaid!</p>
+                          <p className="text-xs text-gray-500">Great job maintaining good credit</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white border-emerald-200 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-gray-900">Payment Calendar</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center text-gray-500 py-4">
+                        <p className="text-sm">
+                          {autoRepayEnabled 
+                            ? "Auto-repayment active - no scheduled payments needed"
+                            : "Enable auto-repayment or set up manual payment schedule"}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Yield Tab */}
+          <TabsContent value="yield" className="space-y-6">
+            {currentBadge === "Unverified" ? (
+              <LockedFeature
+                requiredTier="Verified"
+                currentTier={currentBadge}
+                featureName="Yield Farming"
+                onUpgrade={handleLockedFeatureClick}
+              />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <Card className="bg-white border-purple-200 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-gray-900">
+                        <TrendingUp className="mr-2 h-5 w-5 text-purple-600" />
+                        Yield Performance Dashboard
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Track your yield farming performance across all protocols
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center p-4 bg-purple-50 rounded-lg">
+                          <div className="text-2xl font-bold text-purple-600">${(vaultBalance * 0.087 / 365).toFixed(4)}</div>
+                          <div className="text-sm text-gray-600">Daily Yield</div>
+                        </div>
+                        <div className="text-center p-4 bg-green-50 rounded-lg">
+                          <div className="text-2xl font-bold text-green-600">${(vaultBalance * 0.087 / 12).toFixed(2)}</div>
+                          <div className="text-sm text-gray-600">Monthly Est.</div>
+                        </div>
+                        <div className="text-center p-4 bg-blue-50 rounded-lg">
+                          <div className="text-2xl font-bold text-blue-600">8.7%</div>
+                          <div className="text-sm text-gray-600">Current APY</div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="font-medium text-gray-900">Protocol Performance</h3>
+                        <div className="space-y-3">
+                          {[
+                            { name: "Aave USDC", allocation: 40, apy: 4.5, tvl: "$2.1B", color: "bg-blue-500" },
+                            { name: "Compound cUSDC", allocation: 30, apy: 3.8, tvl: "$1.8B", color: "bg-green-500" },
+                            { name: "Curve 3Pool", allocation: 20, apy: 12.3, tvl: "$890M", color: "bg-yellow-500" },
+                            { name: "Yearn USDC", allocation: 10, apy: 15.2, tvl: "$450M", color: "bg-purple-500" }
+                          ].map((protocol, index) => (
+                            <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center space-x-3">
+                                  <div className={`w-4 h-4 rounded-full ${protocol.color}`} />
+                                  <span className="font-medium text-gray-900">{protocol.name}</span>
+                                  <Badge className="bg-emerald-100 text-emerald-800 text-xs">
+                                    {protocol.apy}% APY
+                                  </Badge>
+                                </div>
+                                <span className="text-sm text-gray-600">{protocol.allocation}% allocated</span>
+                              </div>
+                              <div className="flex justify-between text-sm text-gray-600">
+                                <span>TVL: {protocol.tvl}</span>
+                                <span>Earning: ${((vaultBalance * protocol.allocation / 100) * (protocol.apy / 100) / 365).toFixed(4)}/day</span>
+                              </div>
+                              <Progress value={protocol.allocation} className="h-2 mt-2" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <h4 className="font-medium text-yellow-800 mb-2">🚀 Optimization Opportunity</h4>
+                        <p className="text-sm text-yellow-700 mb-3">
+                          Rebalancing to higher-yield protocols could increase your APY by +2.3%
+                        </p>
+                        <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white">
+                          Auto-Optimize Allocation
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-6">
+                  <Card className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
+                    <CardContent className="pt-6">
+                      <h3 className="text-lg font-semibold mb-2">Total Yield Earned</h3>
+                      <div className="text-3xl font-bold mb-2">${(vaultBalance * 0.087 * 0.25).toFixed(2)}</div>
+                      <p className="text-purple-100 text-sm">+${(vaultBalance * 0.087 / 365).toFixed(4)} today</p>
+                      
+                      <div className="mt-4 space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-purple-100">This Week</span>
+                          <span className="text-white font-medium">${(vaultBalance * 0.087 / 52).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-purple-100">This Month</span>
+                          <span className="text-white font-medium">${(vaultBalance * 0.087 / 12).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-purple-100">Projected Annual</span>
+                          <span className="text-white font-medium">${(vaultBalance * 0.087).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white border-purple-200 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-gray-900">Yield Strategy</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Risk Level</span>
+                        <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Auto-Compound</span>
+                        <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Gas Optimization</span>
+                        <Badge className="bg-blue-100 text-blue-800">Active</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Rebalancing</span>
+                        <Badge className="bg-purple-100 text-purple-800">Weekly</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Activity Tab */}
+          <TabsContent value="activity" className="space-y-6">
             <Card className="bg-white shadow-sm">
               <CardHeader>
-                <CardTitle>Borrow Features</CardTitle>
+                <CardTitle className="flex items-center text-gray-900">
+                  <Activity className="mr-2 h-5 w-5 text-indigo-600" />
+                  Recent Activity
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  All your spending, staking, and DeFi activities
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Borrow functionality coming soon...</p>
+              <CardContent className="space-y-4">
+                {[
+                  {
+                    type: "spend",
+                    title: "Card Purchase",
+                    description: `Spent $${spendAmount || "100"} at Starbucks Coffee`,
+                    amount: `+$${((Number.parseFloat(spendAmount || "100")) * 0.025).toFixed(2)}`,
+                    time: "2 minutes ago",
+                    icon: <CreditCard className="w-5 h-5 text-orange-500" />,
+                    status: "completed"
+                  },
+                  {
+                    type: "vault",
+                    title: "Auto-Stake Triggered",
+                    description: "Cashback staked to Aave USDC vault",
+                    amount: `+$${((Number.parseFloat(spendAmount || "100")) * 0.025).toFixed(2)}`,
+                    time: "2 minutes ago",
+                    icon: <Vault className="w-5 h-5 text-blue-500" />,
+                    status: "completed"
+                  },
+                  {
+                    type: "yield",
+                    title: "Yield Generated",
+                    description: "Daily compound interest earned",
+                    amount: `+$${(vaultBalance * 0.087 / 365).toFixed(4)}`,
+                    time: "5 minutes ago",
+                    icon: <TrendingUp className="w-5 h-5 text-green-500" />,
+                    status: "completed"
+                  },
+                  {
+                    type: "credit",
+                    title: "Credit Available",
+                    description: `Vault growth increased credit limit`,
+                    amount: `+$${(getCreditLimit(currentBadge, vaultBalance) * 0.1).toFixed(2)}`,
+                    time: "1 hour ago",
+                    icon: <DollarSign className="w-5 h-5 text-emerald-500" />,
+                    status: "completed"
+                  },
+                  {
+                    type: "badge",
+                    title: "Badge Progress",
+                    description: `${Math.min(100 - (totalSpending % 100), 100).toFixed(0)} points to next tier`,
+                    amount: `+${Math.floor(Number.parseFloat(spendAmount || "100"))} pts`,
+                    time: "2 hours ago",
+                    icon: <Trophy className="w-5 h-5 text-yellow-500" />,
+                    status: totalSpending >= 100 ? "completed" : "pending"
+                  }
+                ].map((activity, index) => (
+                  <div key={index} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                    <div className="flex-shrink-0">
+                      {activity.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-sm font-medium ${
+                            activity.amount.startsWith('+') ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {activity.amount}
+                          </span>
+                          <Badge 
+                            className={
+                              activity.status === 'completed' 
+                                ? "bg-green-100 text-green-800" 
+                                : "bg-yellow-100 text-yellow-800"
+                            }
+                          >
+                            {activity.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600">{activity.description}</p>
+                      <p className="text-xs text-gray-500">{activity.time}</p>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="repay">
+          {/* Badges Tab */}
+          <TabsContent value="badges" className="space-y-6">
             <Card className="bg-white shadow-sm">
               <CardHeader>
-                <CardTitle>Repay Features</CardTitle>
+                <CardTitle className="flex items-center text-gray-900">
+                  <Trophy className="mr-2 h-5 w-5 text-yellow-600" />
+                  Badge Collection & Progress
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  Earn badges by spending and unlock exclusive features
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Repay functionality coming soon...</p>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    {
+                      name: "Unverified",
+                      requirement: "$0 spent",
+                      features: ["View Only", "Basic Dashboard"],
+                      unlocked: true,
+                      current: currentBadge === "Unverified",
+                      color: "from-gray-400 to-gray-500",
+                      icon: <Lock className="w-8 h-8 text-white" />
+                    },
+                    {
+                      name: "Verified",
+                      requirement: "$100 spent",
+                      features: ["30% Vault Credit", "Basic Protocols", "Manual Repay"],
+                      unlocked: totalSpending >= 100,
+                      current: currentBadge === "Verified",
+                      color: "from-orange-400 to-orange-600",
+                      icon: <Trophy className="w-8 h-8 text-white" />
+                    },
+                    {
+                      name: "Silver Master",
+                      requirement: "$500 spent",
+                      features: ["50% Vault Credit", "Auto Repay", "Cross-Chain", "LI.FI Routing"],
+                      unlocked: totalSpending >= 500,
+                      current: currentBadge === "Silver",
+                      color: "from-gray-400 to-gray-600",
+                      icon: <Award className="w-8 h-8 text-white" />
+                    },
+                    {
+                      name: "Gold Master",
+                      requirement: "$1000 spent",
+                      features: ["70% Vault Credit", "Premium Protocols", "AI Optimization", "Circle CCTP"],
+                      unlocked: totalSpending >= 1000,
+                      current: currentBadge === "Gold",
+                      color: "from-yellow-400 to-yellow-600",
+                      icon: <Crown className="w-8 h-8 text-white" />
+                    }
+                  ].map((badge, index) => (
+                    <Card key={index} className={`relative ${badge.current ? 'ring-2 ring-blue-500' : ''} ${!badge.unlocked ? 'opacity-60' : ''}`}>
+                      <CardContent className="pt-6">
+                        <div className="text-center">
+                          <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${badge.color} flex items-center justify-center mb-4 ${!badge.unlocked ? 'grayscale' : ''}`}>
+                            {badge.icon}
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{badge.name}</h3>
+                          <p className="text-sm text-gray-600 mb-4">{badge.requirement}</p>
+                          
+                          <div className="space-y-2 mb-4">
+                            {badge.features.map((feature, idx) => (
+                              <div key={idx} className="flex items-center justify-center space-x-2">
+                                <div className={`w-2 h-2 rounded-full ${badge.unlocked ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                <span className="text-xs text-gray-600">{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {badge.current && (
+                            <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                              Current Badge
+                            </Badge>
+                          )}
+                          {!badge.unlocked && (
+                            <Badge className="bg-gray-100 text-gray-600">
+                              Locked
+                            </Badge>
+                          )}
+                          {badge.unlocked && !badge.current && (
+                            <Badge className="bg-green-100 text-green-800">
+                              Unlocked
+                            </Badge>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">Badge Progress</h3>
+                      <p className="text-gray-600 mb-4">
+                        You've spent ${totalSpending.toFixed(0)} and earned {Math.floor(totalSpending)} points
+                      </p>
+                      
+                      <div className="max-w-md mx-auto">
+                        <div className="flex justify-between text-sm text-gray-600 mb-2">
+                          <span>Current Progress</span>
+                          <span>
+                            {currentBadge === "Gold" 
+                              ? "Max Level Reached!"
+                              : `${(totalSpending % (
+                                  currentBadge === "Unverified" ? 100 :
+                                  currentBadge === "Verified" ? 400 :
+                                  currentBadge === "Silver" ? 500 : 0
+                                )).toFixed(0)} / ${
+                                  currentBadge === "Unverified" ? "100" :
+                                  currentBadge === "Verified" ? "400" :
+                                  currentBadge === "Silver" ? "500" : "MAX"
+                                }`
+                            }
+                          </span>
+                        </div>
+                        {currentBadge !== "Gold" && (
+                          <Progress
+                            value={
+                              currentBadge === "Unverified" ? (totalSpending / 100) * 100 :
+                              currentBadge === "Verified" ? ((totalSpending - 100) / 400) * 100 :
+                              currentBadge === "Silver" ? ((totalSpending - 500) / 500) * 100 : 100
+                            }
+                            className="h-3"
+                          />
+                        )}
+                      </div>
+
+                      {currentBadge !== "Gold" && (
+                        <div className="mt-4">
+                          <Button
+                            onClick={() => setActiveTab("spend")}
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                          >
+                            <Zap className="mr-2 h-4 w-4" />
+                            Continue Spending to Unlock
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="badges">
-            <Card className="bg-white shadow-sm">
-              <CardHeader>
-                <CardTitle>Badge System</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Badge system coming soon...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-orange-100">Total Spending</p>
+                      <p className="text-2xl font-bold">${totalSpending.toFixed(0)}</p>
+                    </div>
+                    <CreditCard className="w-8 h-8 text-orange-200" />
+                  </div>
+                </CardContent>
+              </Card>
 
-          <TabsContent value="activity">
-            <Card className="bg-white shadow-sm">
-              <CardHeader>
-                <CardTitle>Activity Log</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Activity log coming soon...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              <Card className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-100">Vault Balance</p>
+                      <p className="text-2xl font-bold">${vaultBalance.toFixed(0)}</p>
+                    </div>
+                    <Vault className="w-8 h-8 text-blue-200" />
+                  </div>
+                </CardContent>
+              </Card>
 
-          <TabsContent value="overview">
-            <Card className="bg-white shadow-sm">
-              <CardHeader>
-                <CardTitle>Portfolio Overview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Overview coming soon...</p>
+              <Card className="bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-100">Total Yield</p>
+                      <p className="text-2xl font-bold">${(vaultBalance * 0.087 * 0.25).toFixed(0)}</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-green-200" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100">Available Credit</p>
+                      <p className="text-2xl font-bold">${(getCreditLimit(currentBadge, vaultBalance) - loanBalance).toFixed(0)}</p>
+                    </div>
+                    <DollarSign className="w-8 h-8 text-purple-200" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-gray-900">Portfolio Overview</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Current Badge</span>
+                    <Badge className={`bg-gradient-to-r ${getTierColor(currentBadge)} text-white border-0`}>
+                      {currentBadge}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Credit Utilization</span>
+                    <span className="font-medium">{((loanBalance / Math.max(getCreditLimit(currentBadge, vaultBalance), 1)) * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Monthly Yield</span>
+                    <span className="font-medium text-green-600">${(vaultBalance * 0.087 / 12).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Points Earned</span>
+                    <span className="font-medium text-purple-600">{Math.floor(totalSpending)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-gray-900">Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    onClick={() => setActiveTab("spend")}
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    <Zap className="mr-2 h-4 w-4" />
+                    Make a Purchase
+                  </Button>
+                  <Button 
+                    onClick={() => setActiveTab("vault")}
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    <Vault className="mr-2 h-4 w-4" />
+                    Manage Vault
+                  </Button>
+                  <Button 
+                    onClick={() => setActiveTab("credit")}
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    Access Credit
+                  </Button>
+                  <Button 
+                    onClick={() => setActiveTab("yield")}
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    View Yield
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">🎉 Welcome to Spend2Earn!</h3>
+                  <p className="text-gray-600 mb-6">
+                    Transform every purchase into DeFi yield. Connect your MetaMask Card and start earning automatically.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="p-3 bg-white rounded-lg">
+                      <div className="font-semibold text-orange-600">💳 Unlimited Spending</div>
+                      <div className="text-gray-600">No balance limits</div>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <div className="font-semibold text-green-600">🔄 Auto-Staking</div>
+                      <div className="text-gray-600">2.5% cashback staked</div>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <div className="font-semibold text-purple-600">🏆 Badge Progression</div>
+                      <div className="text-gray-600">Unlock better rates</div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
